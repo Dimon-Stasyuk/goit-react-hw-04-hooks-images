@@ -1,53 +1,45 @@
-import React from "react";
 import { toast } from "react-toastify";
+import { useState } from "react";
 import "./Searchbar.css";
 
-export default class Searchbar extends React.Component {
-  state = {
-    name: "",
+export default function Searchbar({ getName }) {
+  const [name, setName] = useState("");
+
+  const reset = () => {
+    setName("");
   };
 
-  reset = () => {
-    this.setState({
-      name: "",
-    });
+  const handleNameChange = (event) => {
+    setName(event.target.value);
   };
 
-  handleNameChange = (event) => {
-    this.setState({
-      name: event.target.value,
-    });
-  };
-
-  onSubmit = (event) => {
+  const onSubmit = (event) => {
     event.preventDefault();
-    if (this.state.name.trim() === "") {
+    if (name.trim() === "") {
       toast.error("Enter the name of the picture");
       return;
     }
-    this.reset();
-    this.props.getName(this.state.name);
+    reset();
+    getName(name);
   };
 
-  render() {
-    return (
-      <header className='Searchbar'>
-        <form className='SearchForm' onSubmit={this.onSubmit}>
-          <button type='submit' className='SearchForm-button'>
-            <span className='SearchForm-button-label'>Search</span>
-          </button>
+  return (
+    <header className='Searchbar'>
+      <form className='SearchForm' onSubmit={onSubmit}>
+        <button type='submit' className='SearchForm-button'>
+          <span className='SearchForm-button-label'>Search</span>
+        </button>
 
-          <input
-            value={this.state.name}
-            onChange={this.handleNameChange}
-            className='SearchForm-input'
-            type='text'
-            autoComplete='off'
-            autoFocus
-            placeholder='Search images and photos'
-          />
-        </form>
-      </header>
-    );
-  }
+        <input
+          value={name}
+          onChange={handleNameChange}
+          className='SearchForm-input'
+          type='text'
+          autoComplete='off'
+          autoFocus
+          placeholder='Search images and photos'
+        />
+      </form>
+    </header>
+  );
 }
