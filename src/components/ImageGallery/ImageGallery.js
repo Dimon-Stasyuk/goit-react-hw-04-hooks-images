@@ -1,112 +1,94 @@
 import PropTypes from "prop-types";
-import React from "react";
+import { useState, useEffect } from "react";
 import Button from "../Button/Button";
 import Spinner from "../Loader/Loader";
 import "./ImageGallery.css";
+import apiServise from "../../api/apiServise";
 
 import ImageGalleryItem from "../ImageGalleryItem/ImageGalleryItem";
 import Modal from "../Modal/Modal";
 
-export default class ImageGallery extends React.Component {
-  state = {
-    image: null,
-    page: 1,
-    modal: false,
-    largeImg: null,
-    loading: false,
-    btn: false,
-  };
+export default function ImageGallery({ searchName }) {
+  const [image, setImage] = useState([]);
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState(false);
+  const [largeImg, setLargeImg] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [btn, setBtn] = useState(false);
 
-  onFetch = () => {
-    const key = "23097756-2661a8d66efd3b5956221c710";
-    this.setState({ loading: true, btn: false });
+  const onFetch = () => {
+    setLoading(true);
+    setBtn(false);
+
     setTimeout(() => {
-      fetch(
-        `https://pixabay.com/api/?q=${this.props.name}&page=${this.state.page}&key=${key}&image_type=photo&orientation=horizontal&per_page=12`,
-      )
-        .then((response) => response.json())
-        .then((response) =>
-          this.setState((prevState) => ({
-            image: [...prevState.image, ...response.hits],
-            btn: true,
-          })),
-        );
-
-      this.pageIncrement();
-
-      this.setState({ loading: false });
-    }, 500);
+      apiServise(searchName, page).then((res) => {
+        setImage((prev) => [...prev, ...res.hits]);
+        setBtn(true);
+        setLoading(false);
+        setPage((prev) => prev + 1);
+      });
+    }, 300);
   };
 
-  modalTogle = () => {
-    this.setState((prevState) => ({
-      modal: !prevState.modal,
-    }));
+  const modalTogle = () => {
+    setModal((prev) => !prev);
   };
 
-  getLargeImg = (img) => {
-    this.setState({ largeImg: img });
-  };
-
-  ovarlayClose = (event) => {
+  const ovarlayClose = (event) => {
     if (event.target === event.currentTarget) {
-      this.modalTogle();
+      modalTogle();
     }
   };
 
-  scrollPage = () => {
+  const scrollPage = () => {
     setTimeout(() => {
       window.scrollTo({
         top: document.documentElement.scrollHeight,
         behavior: "smooth",
       });
-    }, 1000);
+    }, 600);
   };
 
-  onBtnClick = () => {
-    this.onFetch();
-    this.scrollPage();
+  const onBtnClick = () => {
+    onFetch();
+
+    scrollPage();
   };
 
-  pageIncrement = () => {
-    this.setState((prevState) => ({
-      page: prevState.page + 1,
-    }));
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.name !== this.props.name) {
-      this.setState({ image: [], page: 1 });
-      this.onFetch();
+  useEffect(() => {
+    if (!searchName) {
+      return;
     }
-  }
+    setPage(1);
+    setImage([]);
+    onFetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchName]);
 
-  render() {
-    return (
-      <>
-        <ul className='ImageGallery'>
-          {this.state.image && (
-            <ImageGalleryItem
-              images={this.state.image}
-              onModalOpen={this.modalTogle}
-              ongetImg={this.getLargeImg}
-            />
-          )}
-        </ul>
-        {this.state.btn && <Button OnBtn={this.onBtnClick} />}
-        {this.state.loading && <Spinner />}
-        {this.state.modal && (
-          <Modal
-            onClose={this.ovarlayClose}
-            OnModalClose={this.modalTogle}
-            img={this.state.largeImg}
+  return (
+    <>
+      <ul className='ImageGallery'>
+        {image && (
+          <ImageGalleryItem
+            images={image}
+            onModalOpen={modalTogle}
+            ongetImg={setLargeImg}
           />
         )}
-      </>
-    );
-  }
+      </ul>
+      {btn && <Button OnBtn={onBtnClick} />}
+      {loading && <Spinner />}
+      {modal && (
+        <Modal
+          onClose={ovarlayClose}
+          OnModalClose={modalTogle}
+          img={largeImg}
+        />
+      )}
+    </>
+  );
 }
 
 ImageGallery.propTypes = {
-  name: PropTypes.string.isRequired,
+  searchName: PropTypes.string.isRequired,
 };
