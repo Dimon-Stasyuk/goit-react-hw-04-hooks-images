@@ -16,7 +16,7 @@ export default function ImageGallery({ searchName }) {
   const [loading, setLoading] = useState(false);
   const [btn, setBtn] = useState(false);
 
-  const onFetch = () => {
+  const onFatch = () => {
     const key = "23097756-2661a8d66efd3b5956221c710";
     setLoading(true);
     setBtn(false);
@@ -30,30 +30,14 @@ export default function ImageGallery({ searchName }) {
             console.log("fetch");
             return [...prev, ...response.hits];
           }),
-        )
-        .finally(
-          setTimeout(() => {
-            pageIncrement();
-          }, 600),
         );
+
       setBtn(true);
       setLoading(false);
     }, 500);
   };
 
-  // const onFetch = async () => {
-  //   setLoading(true);
-  //   setBtn(false);
-
-  //   apiServise(searchName, page)
-  //     .then((res) => {
-  //       console.log("ввызвался фетч");
-  //       setImage((prev) => [...prev, ...res.hits]);
-  //     })
-  //     .finally(pageIncrement(), setBtn(true), setLoading(false));
-  // };
-
-  const pageIncrement = async () => {
+  const pageIncrement = () => {
     setPage((prev) => prev + 1);
     console.log("Increment");
   };
@@ -78,24 +62,31 @@ export default function ImageGallery({ searchName }) {
   };
 
   const onBtnClick = () => {
-    onFetch();
+    pageIncrement();
     scrollPage();
-  };
-
-  const reset = () => {
-    console.log("reset");
-    setPage(1);
-    setImage([]);
   };
 
   useEffect(() => {
     if (!searchName) {
       return;
     }
-    reset();
-    onFetch();
+
+    if (page === 1) {
+      onFatch();
+    }
+
+    setPage(1);
+    setImage([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchName]);
+
+  useEffect(() => {
+    if (!page) {
+      return;
+    }
+    onFatch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
   return (
     <>
