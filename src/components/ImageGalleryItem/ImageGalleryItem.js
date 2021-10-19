@@ -1,15 +1,15 @@
 import PropTypes from "prop-types";
-
+import shortid from "shortid";
 import "./ImageGalleryItem.css";
 
 export default function ImageGalleryItem({ onModalOpen, ongetImg, images }) {
   return (
     <>
-      {images.map(({ webformatURL, largeImageURL, id }) => {
+      {images.map(({ webformatURL, largeImageURL }) => {
         return (
           <li
             className='ImageGalleryItem'
-            key={id}
+            key={shortid.generate()}
             onClick={() => {
               onModalOpen();
               ongetImg(largeImageURL);

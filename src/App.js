@@ -14,6 +14,7 @@ export default function App() {
     <>
       <Searchbar getName={setName} />
       <ImageGallery searchName={name} />
+
       <ToastContainer />
     </>
   );

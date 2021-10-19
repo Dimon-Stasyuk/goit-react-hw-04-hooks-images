@@ -3,31 +3,59 @@ import { useState, useEffect } from "react";
 import Button from "../Button/Button";
 import Spinner from "../Loader/Loader";
 import "./ImageGallery.css";
-import apiServise from "../../api/apiServise";
+// import apiServise from "../../api/apiServise";
 
 import ImageGalleryItem from "../ImageGalleryItem/ImageGalleryItem";
 import Modal from "../Modal/Modal";
 
 export default function ImageGallery({ searchName }) {
-  const [image, setImage] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(null);
+  const [image, setImage] = useState(null);
   const [modal, setModal] = useState(false);
   const [largeImg, setLargeImg] = useState(null);
   const [loading, setLoading] = useState(false);
   const [btn, setBtn] = useState(false);
 
   const onFetch = () => {
+    const key = "23097756-2661a8d66efd3b5956221c710";
     setLoading(true);
     setBtn(false);
-
     setTimeout(() => {
-      apiServise(searchName, page).then((res) => {
-        setImage((prev) => [...prev, ...res.hits]);
-        setBtn(true);
-        setLoading(false);
-        setPage((prev) => prev + 1);
-      });
-    }, 300);
+      fetch(
+        `https://pixabay.com/api/?q=${searchName}&page=${page}&key=${key}&image_type=photo&orientation=horizontal&per_page=12`,
+      )
+        .then((response) => response.json())
+        .then((response) =>
+          setImage((prev) => {
+            console.log("fetch");
+            return [...prev, ...response.hits];
+          }),
+        )
+        .finally(
+          setTimeout(() => {
+            pageIncrement();
+          }, 600),
+        );
+      setBtn(true);
+      setLoading(false);
+    }, 500);
+  };
+
+  // const onFetch = async () => {
+  //   setLoading(true);
+  //   setBtn(false);
+
+  //   apiServise(searchName, page)
+  //     .then((res) => {
+  //       console.log("ввызвался фетч");
+  //       setImage((prev) => [...prev, ...res.hits]);
+  //     })
+  //     .finally(pageIncrement(), setBtn(true), setLoading(false));
+  // };
+
+  const pageIncrement = async () => {
+    setPage((prev) => prev + 1);
+    console.log("Increment");
   };
 
   const modalTogle = () => {
@@ -46,21 +74,25 @@ export default function ImageGallery({ searchName }) {
         top: document.documentElement.scrollHeight,
         behavior: "smooth",
       });
-    }, 600);
+    }, 1000);
   };
 
   const onBtnClick = () => {
     onFetch();
-
     scrollPage();
+  };
+
+  const reset = () => {
+    console.log("reset");
+    setPage(1);
+    setImage([]);
   };
 
   useEffect(() => {
     if (!searchName) {
       return;
     }
-    setPage(1);
-    setImage([]);
+    reset();
     onFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchName]);
